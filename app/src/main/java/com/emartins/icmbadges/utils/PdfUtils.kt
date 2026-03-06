@@ -11,7 +11,13 @@ import java.io.File
 import java.io.FileOutputStream
 
 object PdfUtils {
-    fun convertPdfToBitmap(context: Context, pdfBytes: ByteArray, pageIndex: Int = 0, scale: Float = 6f): Bitmap {
+    fun convertPdfToBitmap(
+        context: Context,
+        pdfBytes: ByteArray,
+        pageIndex: Int = 0,
+        scale: Float = 6f
+    ): Bitmap {
+
         val tempFile = File(context.cacheDir, "temp.pdf")
         FileOutputStream(tempFile).use { it.write(pdfBytes) }
 
@@ -22,17 +28,27 @@ object PdfUtils {
         val width = (page.width * scale).toInt()
         val height = (page.height * scale).toInt()
 
-        val bitmap = createBitmap(width, height)
-        //val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        canvas.drawColor(Color.WHITE) // força fundo branco
-        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-        //page.render(bitmap, rect, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+        val margin = 40 // margem lateral
+
+        // bitmap original renderizado
+        val originalBitmap = createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(originalBitmap)
+        canvas.drawColor(Color.WHITE)
+
+        page.render(originalBitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+
+        // bitmap final com margem
+        val finalBitmap = createBitmap(width + margin, height, Bitmap.Config.ARGB_8888)
+        val finalCanvas = Canvas(finalBitmap)
+        finalCanvas.drawColor(Color.WHITE)
+
+        // desenha o PDF no bitmap com margem
+        finalCanvas.drawBitmap(originalBitmap, 0f, 0f, null)
 
         page.close()
         pdfRenderer.close()
         fileDescriptor.close()
 
-        return bitmap
+        return finalBitmap
     }
 }

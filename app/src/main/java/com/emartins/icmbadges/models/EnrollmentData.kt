@@ -9,7 +9,7 @@ data class EnrollmentDataWrapper(
 
 data class EnrollmentData(
 
-    @SerializedName("isem_id")
+    @SerializedName("isem_id", alternate = ["id"])
     val isem_id: String,
 
     // pode vir como "nome" (seminarista) ou "nom_membro" (voluntário)

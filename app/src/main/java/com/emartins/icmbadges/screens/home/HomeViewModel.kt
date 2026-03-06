@@ -1,5 +1,6 @@
 package com.emartins.icmbadges.screens.home
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -157,7 +158,8 @@ class HomeViewModel: ViewModel() {
                 val enrollment = enrollmentData.value ?: return@launch
 
                 val request = GetBadgeRequest(
-                    ids = listOf(enrollment.isem_id)
+                    ids = listOf(enrollment.isem_id),
+                    "trabalhadores"
                 )
 
                 selectedEvent.value?.let { event ->
