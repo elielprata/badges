@@ -56,7 +56,7 @@ fun EnrollmentModal(
                             if (enrollment.isem_id == "-1") {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(
-                                        text = enrollment.nome,
+                                        text = enrollment.nome.orEmpty(),
                                         modifier = Modifier.fillMaxWidth(),
                                         textAlign = TextAlign.Center
                                     )
@@ -78,8 +78,8 @@ fun EnrollmentModal(
                                     Spacer(modifier = Modifier.width(4.dp))
 
                                     Column {
-                                        Text(text = enrollment.nome)
-                                        Text(text = enrollment.nom_igreja)
+                                        Text(text = enrollment.nome.orEmpty())
+                                        Text(text = enrollment.nom_igreja.orEmpty())
                                     }
                                 }
 
