@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.State
 
 class HomeViewModel: ViewModel() {
+
     private val _codNivel = MutableStateFlow<String?>(null)
     val codNivel: StateFlow<String?> = _codNivel
 
@@ -28,6 +29,8 @@ class HomeViewModel: ViewModel() {
     private val _pdfBytes = MutableStateFlow<ByteArray?>(null)
     val pdfBytes: StateFlow<ByteArray?> = _pdfBytes
 
+    private val _isWorker = MutableStateFlow(false)
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
@@ -40,71 +43,117 @@ class HomeViewModel: ViewModel() {
     private val _isModalOpen = MutableStateFlow(false)
     val isModalOpen: StateFlow<Boolean> = _isModalOpen
 
+
     fun search(query: String) {
         viewModelScope.launch {
+
             _isLoading.value = true
             _error.value = null
+
             try {
+
                 selectedEvent.value?.let { event ->
-                    val result =
-                        ApiService().api.searchEnrollment(event.id.toInt(), query)
+
+                    val api = ApiService().api
+
+                    // 1️⃣ tenta buscar seminarista
+                    var result = api.searchEnrollment(
+                        event.id.toInt(),
+                        query
+                    )
+
                     if (result.isNotEmpty()) {
+                        _isWorker.value = false
+                        _enrollmentData.value = result[0]
+                        return@let
+                    }
+
+                    // 2️⃣ se não achou, busca trabalhador
+                    result = api.searchVoluntaryEnrollment(
+                        event.id.toInt(),
+                        query
+                    )
+
+                    if (result.isNotEmpty()) {
+                        _isWorker.value = true
                         _enrollmentData.value = result[0]
                     } else {
                         _enrollmentData.value =
-                            EnrollmentData("-1", "Nenhum resultado encontrado", "", "")
+                            EnrollmentData("-1","Nenhum resultado encontrado","","")
                     }
+
                 } ?: run {
-                    // cai aqui se selectedEvent for null
-                    _enrollmentData.value = EnrollmentData("-1", "Nenhum evento selecionado", "","")
+                    _enrollmentData.value =
+                        EnrollmentData("-1","Nenhum evento selecionado","","")
                 }
+
             } catch (e: Exception) {
                 println("RESPONSE $e")
                 _error.value = e.message
-            } finally {
+            }
+            finally {
                 _isLoading.value = false
             }
         }
     }
 
+
     fun setCodNivel(codigo: String) {
         _codNivel.value = codigo
     }
+
 
     fun selectEvent(event: GetEventsResponse) {
         _selectedEvent.value = event
         _isModalOpen.value = false
     }
 
+
     fun openModal() {
         _isModalOpen.value = true
     }
 
+
     fun loadEvents() {
+
         val codigo = _codNivel.value ?: return
+
         viewModelScope.launch {
+
             _isLoadingEvents.value = true
+
             try {
+
                 val events = ApiService().api.getEvents(codigo)
+
                 _events.value = events
+
             } catch (e: Exception) {
+
                 println("ERROR: ${e.message}")
+
             } finally {
+
                 _isLoadingEvents.value = false
             }
         }
     }
 
+
     fun closeModal() {
         _isModalOpen.value = false
     }
 
+
     fun generateBadgePdf() {
+
         viewModelScope.launch {
+
             _isLoading.value = true
             _error.value = null
+
             try {
-                // Aqui você pega o dado do participante que já está no ViewModel
+
                 val enrollment = enrollmentData.value ?: return@launch
 
                 val request = GetBadgeRequest(
@@ -112,30 +161,46 @@ class HomeViewModel: ViewModel() {
                 )
 
                 selectedEvent.value?.let { event ->
-                    // Chamada para sua API que retorna PDF
-                    val response = ApiService().api.getBadgePdf(event.id.toInt(), request)
+
+                    val api = ApiService().api
+
+                    val response =
+                        if (_isWorker.value) {
+                            api.getWorkerBadgePdf(
+                                event.id.toInt(),
+                                request
+                            )
+                        } else {
+                            api.getBadgePdf(
+                                event.id.toInt(),
+                                request
+                            )
+                        }
 
                     if (response.isSuccessful) {
+
                         response.body()?.let { body ->
+
                             val pdfBytes = body.bytes()
-                            //print(pdfBytes)
 
                             _pdfBytes.value = pdfBytes
+
                             _enrollmentData.value = null
                         }
 
                     } else {
-                        response.errorBody()?.let { body ->
-                            println("STATUS: ${response.code()}")
-                            //println("BODY: ${body.string()}")
-                        }
+
+                        println("STATUS: ${response.code()}")
                     }
                 }
 
             } catch (e: Exception) {
+
                 println("TESTE: ${e.message}")
                 _error.value = e.message
+
             } finally {
+
                 _isLoading.value = false
             }
         }
