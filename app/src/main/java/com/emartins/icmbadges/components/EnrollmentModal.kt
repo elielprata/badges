@@ -72,14 +72,28 @@ fun EnrollmentModal(
                                 Row(modifier = Modifier.padding(15.dp, 0.dp)) {
                                     Column {
                                         Text(text = "NOME:", fontWeight = FontWeight.Bold)
-                                        Text(text = "IGREJA:", fontWeight = FontWeight.Bold )
+
+                                        if (!enrollment.nom_igreja.isNullOrBlank()) {
+                                            Text(text = "IGREJA:", fontWeight = FontWeight.Bold)
+                                        }
+
+                                        if (!enrollment.nom_equipe.isNullOrBlank()) {
+                                            Text(text = "EQUIPE:", fontWeight = FontWeight.Bold)
+                                        }
                                     }
 
                                     Spacer(modifier = Modifier.width(4.dp))
 
                                     Column {
                                         Text(text = enrollment.nome.orEmpty())
-                                        Text(text = enrollment.nom_igreja.orEmpty())
+
+                                        if (!enrollment.nom_igreja.isNullOrBlank()) {
+                                            Text(text = enrollment.nom_igreja.orEmpty())
+                                        }
+
+                                        if (!enrollment.nom_equipe.isNullOrBlank()) {
+                                            Text(text = enrollment.nom_equipe.orEmpty())
+                                        }
                                     }
                                 }
 

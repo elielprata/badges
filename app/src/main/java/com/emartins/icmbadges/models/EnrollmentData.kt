@@ -18,5 +18,7 @@ data class EnrollmentData(
 
     val dsc_classe: String? = null,
 
-    val nom_igreja: String? = null
+    val nom_igreja: String? = null,
+
+    val nom_equipe: String? = null
 )
