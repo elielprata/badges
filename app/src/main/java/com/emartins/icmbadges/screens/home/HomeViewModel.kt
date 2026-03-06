@@ -159,7 +159,7 @@ class HomeViewModel: ViewModel() {
 
                 val request = GetBadgeRequest(
                     ids = listOf(enrollment.isem_id),
-                    "trabalhadores"
+                    if (_isWorker.value) "trabalhadores" else "seminaristas"
                 )
 
                 selectedEvent.value?.let { event ->
