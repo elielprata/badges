@@ -149,8 +149,8 @@ fun Content(viewModel: HomeViewModel, modifier: Modifier = Modifier) {
 
                 queryResult.value != null -> {
                     val enrollment = queryResult.value!!
-                    Text(text = enrollment.nome)
-                    Text(text = enrollment.dsc_classe)
+                    Text(text = enrollment.nome.orEmpty())
+                    Text(text = enrollment.dsc_classe.orEmpty())
                 }
 
                 else -> {
